@@ -1,0 +1,26 @@
+{
+  "name": "Nomi Command Centre",
+  "short_name": "Command",
+  "description": "Personal command centre for Noman Sohail — AML professional, legal strategist, perpetual thinker.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080c10",
+  "theme_color": "#080c10",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "lang": "en-GB"
+}
