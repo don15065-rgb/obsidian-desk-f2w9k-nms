@@ -1,12 +1,10 @@
 const CACHE_NAME = 'nomi-command-v1';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/obsidian-desk-f2w9k-nms/',
+  '/obsidian-desk-f2w9k-nms/index.html',
+  '/obsidian-desk-f2w9k-nms/styles.css',
+  '/obsidian-desk-f2w9k-nms/app.js',
+  '/obsidian-desk-f2w9k-nms/manifest.json'
 ];
 
 self.addEventListener('install', e => {
