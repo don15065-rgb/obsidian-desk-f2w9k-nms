@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Nomi Command Centre — Personal productivity for AML professional Noman Sohail." />
+  <meta name="theme-color" content="#080c10" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Command" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Nomi Command Centre</title>
+</head>
+<body>
+
+<!-- ── TOP NAV ─────────────────────────────────────────────── -->
+<nav id="top-nav">
+  <div id="nav-brand">
+    <span class="brand-name">Command Centre</span>
+    <span class="brand-sub">Noman Sohail / CAMS</span>
+  </div>
+
+  <div id="nav-tabs">
+    <button class="nav-tab" data-page="today">Today</button>
+    <button class="nav-tab" data-page="tasks">Tasks</button>
+    <button class="nav-tab" data-page="brain">Brain Dump</button>
+    <button class="nav-tab" data-page="jobs">Job Hunt</button>
+    <button class="nav-tab" data-page="learning">Learning</button>
+    <button class="nav-tab" data-page="focus">Focus</button>
+    <button class="nav-tab" data-page="reminders">Reminders</button>
+    <button class="nav-tab" data-page="review">Review</button>
+    <button class="nav-tab" data-page="mood">Mood</button>
+    <button class="nav-tab" data-page="settings">Settings</button>
+  </div>
+
+  <div id="nav-actions">
+    <button class="btn btn-primary btn-sm" onclick="openNewTaskModal()">+ Task</button>
+    <button id="mobile-menu-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ── MOBILE DRAWER ───────────────────────────────────────── -->
+<div id="mobile-drawer">
+  <button class="nav-tab" data-page="today">Today</button>
+  <button class="nav-tab" data-page="tasks">Tasks</button>
+  <button class="nav-tab" data-page="brain">Brain Dump</button>
+  <button class="nav-tab" data-page="jobs">Job Hunt</button>
+  <button class="nav-tab" data-page="learning">Learning</button>
+  <button class="nav-tab" data-page="focus">Focus</button>
+  <button class="nav-tab" data-page="reminders">Reminders</button>
+  <button class="nav-tab" data-page="review">Weekly Review</button>
+  <button class="nav-tab" data-page="mood">Mood</button>
+  <button class="nav-tab" data-page="settings">Settings</button>
+</div>
+
+<!-- ── NOTIFICATION BANNER ────────────────────────────────── -->
+<div id="notif-banner"></div>
+
+<!-- ── FOCUS OVERLAY ──────────────────────────────────────── -->
+<div id="focus-overlay">
+  <svg class="focus-progress-ring" width="320" height="320" viewBox="0 0 320 320">
+    <circle cx="160" cy="160" r="140" fill="none" stroke="rgba(201,168,76,0.12)" stroke-width="1"/>
+    <circle id="focus-ring-circle"
+      cx="160" cy="160" r="140"
+      fill="none"
+      stroke="rgba(201,168,76,0.5)"
+      stroke-width="1.5"
+      stroke-dasharray="879.6"
+      stroke-dashoffset="879.6"
+      stroke-linecap="round"
+      transform="rotate(-90 160 160)"
+      style="transition:stroke-dashoffset 1s linear"/>
+  </svg>
+  <div class="focus-phase" id="focus-phase-label">Sprint</div>
+  <div class="focus-timer-display" id="focus-timer">25:00</div>
+  <div class="focus-task-display" id="focus-task-display">Deep work session</div>
+  <div class="focus-controls">
+    <button class="btn btn-primary" onclick="endFocus(false)">End Session</button>
+    <button class="btn btn-ghost" onclick="endFocus(true)">Complete</button>
+  </div>
+  <div class="focus-quote" id="focus-quote"></div>
+  <input
+    id="focus-park-input"
+    class="focus-park-input"
+    type="text"
+    placeholder="Park a distraction — type it and release it"
+  />
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGES
+     ══════════════════════════════════════════════════════════ -->
+<div id="app-container">
+
+<!-- ── PAGE: TODAY ────────────────────────────────────────── -->
+<section id="page-today" class="page">
+  <div id="date-hero">
+    <div id="date-display"></div>
+    <div id="greeting-text"></div>
+  </div>
+
+  <!-- Mission -->
+  <div class="mission-card gold-accent">
+    <div class="section-label">Main Mission</div>
+    <div id="mission-text" style="cursor:pointer" title="Click to edit"></div>
+    <input id="mission-input" type="text" maxlength="200" />
+  </div>
+
+  <!-- Day Progress -->
+  <div style="margin-bottom:24px">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="day-progress-fill" style="width:0%"></div>
+    </div>
+    <div class="progress-label">
+      <span id="day-progress-label-left">06:00</span>
+      <span id="day-progress-label-right">0% through the day</span>
+    </div>
+  </div>
+
+  <!-- Focus status -->
+  <div style="margin-bottom:20px">
+    <span id="focus-status-badge" class="focus-badge">
+      <span class="focus-dot"></span>No active focus session
+    </span>
+    &nbsp;&nbsp;
+    <button class="btn btn-ghost btn-sm" onclick="navigate('focus')">Start focus</button>
+  </div>
+
+  <!-- Top 3 priorities -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="section-label">Top Priorities</div>
+    <div id="today-priorities"></div>
+    <button class="btn btn-ghost btn-sm mt-8" onclick="navigate('tasks')">View all tasks</button>
+  </div>
+
+  <!-- Quick capture -->
+  <div class="card">
+    <div class="section-label">Quick Capture</div>
+    <div class="quick-capture">
+      <input
+        id="quick-capture-input"
+        type="text"
+        placeholder="Thought, task, or distraction — capture it now, deal with it later"
+        autocomplete="off"
+      />
+      <button class="btn btn-primary" onclick="addQuickCapture()">Capture</button>
+    </div>
+    <div id="quick-capture-list"></div>
+  </div>
+</section>
+
+<!-- ── PAGE: TASKS ────────────────────────────────────────── -->
+<section id="page-tasks" class="page">
+  <div class="flex-between mb-16">
+    <div>
+      <div class="page-title">Task System</div>
+      <div class="page-subtitle">Focused. Filtered. No overwhelm.</div>
+    </div>
+    <button class="btn btn-primary" onclick="openNewTaskModal()">+ New Task</button>
+  </div>
+
+  <div class="tasks-filter-bar">
+    <button class="filter-btn active" data-filter="now">Now</button>
+    <button class="filter-btn" data-filter="today">Today</button>
+    <button class="filter-btn" data-filter="quick">Quick Wins</button>
+    <button class="filter-btn" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="done">Done</button>
+  </div>
+
+  <div id="task-list"></div>
+</section>
+
+<!-- ── PAGE: BRAIN DUMP ───────────────────────────────────── -->
+<section id="page-brain" class="page">
+  <div class="flex-between mb-16">
+    <div>
+      <div class="page-title">Brain Dump</div>
+      <div class="page-subtitle">Release the chaos. Organise it after.</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="organiseChaos()">Organise my chaos</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="section-label">Dump it all here</div>
+    <textarea
+      id="brain-dump-input"
+      placeholder="Every thought, idea, worry, task fragment, random connection — write it. One per line, or just stream of consciousness. Press Enter or click Dump."
+    ></textarea>
+    <button class="btn btn-primary" onclick="addBrainItem()">Dump</button>
+  </div>
+
+  <div id="brain-list"></div>
+</section>
+
+<!-- ── PAGE: JOB HUNT ─────────────────────────────────────── -->
+<section id="page-jobs" class="page">
+  <div class="flex-between mb-16">
+    <div>
+      <div class="page-title">Job Hunt Tracker</div>
+      <div class="page-subtitle">Applications, pipeline, next actions.</div>
+    </div>
+    <button class="btn btn-primary" onclick="openNewJob()">+ Application</button>
+  </div>
+
+  <!-- Pipeline board -->
+  <div class="card" style="margin-bottom:24px">
+    <div class="section-label">Pipeline</div>
+    <div id="pipeline-board" class="pipeline-board"></div>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <div class="section-label">All Applications</div>
+    <div style="overflow-x:auto">
+      <table class="job-table">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Role</th>
+            <th>Platform</th>
+            <th>Applied</th>
+            <th>Status</th>
+            <th>Next Action</th>
+          </tr>
+        </thead>
+        <tbody id="jobs-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ── PAGE: LEARNING ─────────────────────────────────────── -->
+<section id="page-learning" class="page">
+  <div class="flex-between mb-16">
+    <div>
+      <div class="page-title">Learning Tracker</div>
+      <div class="page-subtitle">SQL, AML operations, sanctions, financial crime, language.</div>
+    </div>
+    <button class="btn btn-primary" onclick="openNewLearning()">+ Topic</button>
+  </div>
+  <div id="learning-list"></div>
+</section>
+
+<!-- ── PAGE: FOCUS ────────────────────────────────────────── -->
+<section id="page-focus" class="page">
+  <div class="page-title" style="margin-bottom:4px">Focus Mode</div>
+  <div class="page-subtitle">One task. One block. Everything else can wait.</div>
+
+  <div class="card" style="max-width:520px;margin:0 auto">
+    <div class="section-label">Choose a task</div>
+    <select id="focus-task-picker" class="field-select" style="margin-bottom:20px"></select>
+
+    <div class="section-label">Duration</div>
+    <div class="duration-picker">
+      <button class="duration-btn" data-mins="25">25 min Sprint</button>
+      <button class="duration-btn" data-mins="45">45 min Deep Work</button>
+      <button class="duration-btn" data-mins="90">90 min Hyperfocus</button>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Custom duration (minutes)</label>
+      <input
+        id="focus-custom-mins"
+        type="number"
+        class="field-input"
+        placeholder="e.g. 60"
+        min="1"
+        max="180"
+      />
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px" onclick="startFocus()">
+      Begin Session
+    </button>
+  </div>
+
+  <!-- Parked thoughts from focus -->
+  <div style="max-width:520px;margin:24px auto 0">
+    <div class="section-label">Parked Thoughts</div>
+    <div id="parked-list" class="text-muted">
+      Thoughts parked during focus sessions appear here and in Brain Dump.
+    </div>
+  </div>
+</section>
+
+<!-- ── PAGE: REMINDERS ───────────────────────────────────── -->
+<section id="page-reminders" class="page">
+  <div class="page-title" style="margin-bottom:4px">Reminders</div>
+  <div class="page-subtitle">Browser-based. Private. No accounts.</div>
+
+  <div id="notif-request" class="card" style="margin-bottom:20px;display:none">
+    <div class="section-label">Notification Permission</div>
+    <p class="text-muted" style="margin-bottom:12px">
+      Enable browser notifications to receive reminders even when the app is in the background.
+    </p>
+    <button class="btn btn-primary" onclick="requestNotifPermission()">Enable Notifications</button>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="section-label">Add Reminder</div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Reminder</label>
+        <input id="reminder-text-input" type="text" class="field-input" placeholder="What to remind you of" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Date and Time</label>
+        <input id="reminder-time-input" type="datetime-local" class="field-input" />
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="addReminder()">Set Reminder</button>
+  </div>
+
+  <div class="section-label">Upcoming Reminders</div>
+  <div id="reminder-list"></div>
+</section>
+
+<!-- ── PAGE: WEEKLY REVIEW ───────────────────────────────── -->
+<section id="page-review" class="page">
+  <div class="page-title" style="margin-bottom:4px">Weekly Review</div>
+  <div class="page-subtitle">Reflection is not optional. It is how you improve trajectory.</div>
+
+  <!-- Stats snapshot -->
+  <div class="grid-3" style="margin-bottom:24px">
+    <div class="card" style="text-align:center">
+      <div class="section-label" style="justify-content:center">Tasks Completed</div>
+      <div style="font-family:var(--font-mono);font-size:2rem;color:var(--gold)" id="review-done-count">0</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="section-label" style="justify-content:center">Job Applications</div>
+      <div style="font-family:var(--font-mono);font-size:2rem;color:var(--cyan)" id="review-job-count">0</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="section-label" style="justify-content:center">Learning Progress</div>
+      <div style="font-family:var(--font-mono);font-size:2rem;color:var(--violet)" id="review-learning-pct">0%</div>
+    </div>
+  </div>
+
+  <div class="review-section">
+    <div class="section-label">Wins this week</div>
+    <textarea id="review-wins" class="field-textarea" placeholder="What actually moved forward? Be specific. Do not sell yourself short."></textarea>
+  </div>
+
+  <div class="review-section">
+    <div class="section-label">Chaos level this week</div>
+    <div class="chaos-rating" style="gap:10px;margin-bottom:4px">
+      <button class="chaos-dot" data-level="1" onclick="selectChaos(1)" title="Under control"></button>
+      <button class="chaos-dot" data-level="2" onclick="selectChaos(2)" title="Manageable"></button>
+      <button class="chaos-dot" data-level="3" onclick="selectChaos(3)" title="Turbulent"></button>
+      <button class="chaos-dot" data-level="4" onclick="selectChaos(4)" title="Stressful"></button>
+      <button class="chaos-dot" data-level="5" onclick="selectChaos(5)" title="Overwhelmed"></button>
+    </div>
+    <div class="text-muted" style="font-size:0.7rem">1 = calm control / 5 = total chaos</div>
+  </div>
+
+  <div class="review-section">
+    <div class="section-label">Next week — Main mission</div>
+    <textarea id="review-mission-next" class="field-textarea" placeholder="One sentence. The single most important thing next week needs to deliver."></textarea>
+  </div>
+
+  <button class="btn btn-primary" onclick="saveWeeklyReview()">Save Review</button>
+</section>
+
+<!-- ── PAGE: MOOD ─────────────────────────────────────────── -->
+<section id="page-mood" class="page">
+  <div class="page-title" style="margin-bottom:4px">Mood and Energy</div>
+  <div class="page-subtitle">Honest self-knowledge is not weakness. It is operational intelligence.</div>
+
+  <div class="card" style="margin-bottom:24px;max-width:540px">
+    <div class="section-label">Today's Check-in</div>
+
+    <div class="field-group">
+      <div class="field-label">Mood</div>
+      <div class="mood-scale">
+        <button class="mood-btn" data-group="mood" data-value="1">Very low</button>
+        <button class="mood-btn" data-group="mood" data-value="2">Low</button>
+        <button class="mood-btn" data-group="mood" data-value="3">Neutral</button>
+        <button class="mood-btn" data-group="mood" data-value="4">Good</button>
+        <button class="mood-btn" data-group="mood" data-value="5">Excellent</button>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Energy</div>
+      <div class="mood-scale">
+        <button class="mood-btn" data-group="energy" data-value="1">Depleted</button>
+        <button class="mood-btn" data-group="energy" data-value="2">Low</button>
+        <button class="mood-btn" data-group="energy" data-value="3">Moderate</button>
+        <button class="mood-btn" data-group="energy" data-value="4">High</button>
+        <button class="mood-btn" data-group="energy" data-value="5">Peak</button>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Stress / Anxiety</div>
+      <div class="mood-scale">
+        <button class="mood-btn" data-group="stress" data-value="1">None</button>
+        <button class="mood-btn" data-group="stress" data-value="2">Mild</button>
+        <button class="mood-btn" data-group="stress" data-value="3">Moderate</button>
+        <button class="mood-btn" data-group="stress" data-value="4">High</button>
+        <button class="mood-btn" data-group="stress" data-value="5">Severe</button>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Notes (optional)</label>
+      <textarea id="mood-notes" class="field-textarea" style="min-height:60px" placeholder="What is driving this? Be brief. Be honest."></textarea>
+    </div>
+
+    <button class="btn btn-primary" onclick="saveMoodEntry()">Save Check-in</button>
+  </div>
+
+  <div class="card">
+    <div id="mood-chart"></div>
+  </div>
+</section>
+
+<!-- ── PAGE: SETTINGS ─────────────────────────────────────── -->
+<section id="page-settings" class="page">
+  <div class="page-title" style="margin-bottom:4px">Settings and Data</div>
+  <div class="page-subtitle">Export, backup, and control your data.</div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="section-label">Export and Backup</div>
+    <p class="text-muted" style="margin-bottom:16px">
+      All data is stored locally in your browser. Export regularly as a backup.
+    </p>
+    <div class="export-section">
+      <button class="btn btn-primary" onclick="exportJSON()">Export JSON backup</button>
+      <button class="btn btn-ghost" onclick="exportCSV()">Export tasks as CSV</button>
+      <button class="btn btn-ghost" onclick="triggerImport()">Import JSON backup</button>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none" />
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="section-label">PWA Installation</div>
+    <p class="text-muted" style="margin-bottom:12px;line-height:1.6">
+      <strong style="color:var(--text-primary)">iPhone:</strong> Open in Safari. Tap the Share icon. Tap "Add to Home Screen". Name it "Command".<br><br>
+      <strong style="color:var(--text-primary)">Mac:</strong> Open in Chrome or Edge. Click the install icon in the address bar. Or go to browser menu and click "Install Nomi Command Centre".<br><br>
+      <strong style="color:var(--text-primary)">Firefox:</strong> PWA install not supported natively. Use Chrome or Edge on desktop.
+    </p>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="section-label">GitHub Pages Deployment</div>
+    <p class="text-muted" style="line-height:1.6">
+      1. Create a new repository on GitHub (e.g. <code style="font-family:var(--font-mono);color:var(--gold)">nomi-command-centre</code>).<br>
+      2. Upload all 5 files: index.html, styles.css, app.js, manifest.json, service-worker.js, and the icons folder.<br>
+      3. Go to Settings &rarr; Pages &rarr; Deploy from branch &rarr; main &rarr; root.<br>
+      4. Your app lives at <code style="font-family:var(--font-mono);color:var(--gold)">https://yourusername.github.io/nomi-command-centre</code>.<br>
+      5. On iPhone, open that URL in Safari and add to Home Screen.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="section-label">Danger Zone</div>
+    <p class="text-muted" style="margin-bottom:12px">This will delete all data and restore defaults. Export first.</p>
+    <button class="btn btn-danger" onclick="clearAllData()">Clear All Data</button>
+  </div>
+</section>
+
+</div><!-- end app-container -->
+
+<!-- ══════════════════════════════════════════════════════════
+     MODALS
+     ══════════════════════════════════════════════════════════ -->
+
+<!-- Task Modal -->
+<div class="modal-overlay" id="task-modal" onclick="if(event.target===this)closeModal('task-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Task</span>
+      <button class="btn btn-ghost btn-sm btn-icon" onclick="closeModal('task-modal')">&#10005;</button>
+    </div>
+    <div id="task-form">
+      <div class="field-group">
+        <label class="field-label">Title</label>
+        <input id="tf-title" type="text" class="field-input" placeholder="Be specific. Vague tasks do not get done." />
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Category</label>
+          <select id="tf-category" class="field-select">
+            <option>AML</option>
+            <option>Legal</option>
+            <option>Learning</option>
+            <option>Job Hunt</option>
+            <option>Freelance</option>
+            <option>Personal</option>
+            <option>Admin</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Status</label>
+          <select id="tf-status" class="field-select">
+            <option value="not started">Not Started</option>
+            <option value="in progress">In Progress</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Energy Required</label>
+          <select id="tf-energy" class="field-select">
+            <option value="low">Low — minimal focus</option>
+            <option value="medium">Medium — solid attention</option>
+            <option value="high">High — deep work</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Urgency</label>
+          <select id="tf-urgency" class="field-select">
+            <option value="now">Now — do it immediately</option>
+            <option value="today">Today — before midnight</option>
+            <option value="this week">This week — keep it visible</option>
+            <option value="someday">Someday — low priority</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Notes</label>
+        <textarea id="tf-notes" class="field-textarea" style="min-height:60px" placeholder="Context, sub-steps, or a reminder to yourself."></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Deadline</label>
+          <input id="tf-deadline" type="date" class="field-input" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Reminder</label>
+          <input id="tf-reminder" type="datetime-local" class="field-input" />
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="saveTaskForm()">Save Task</button>
+        <button class="btn btn-ghost" onclick="closeModal('task-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Job Modal -->
+<div class="modal-overlay" id="job-modal" onclick="if(event.target===this)closeModal('job-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Job Application</span>
+      <button class="btn btn-ghost btn-sm btn-icon" onclick="closeModal('job-modal')">&#10005;</button>
+    </div>
+    <div id="job-form">
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Company</label>
+          <input id="jf-company" type="text" class="field-input" placeholder="SadaPay" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Role</label>
+          <input id="jf-role" type="text" class="field-input" placeholder="AML Analyst" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Platform</label>
+          <input id="jf-platform" type="text" class="field-input" placeholder="LinkedIn / Upwork / Direct" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Date Applied</label>
+          <input id="jf-date" type="date" class="field-input" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Status</label>
+          <select id="jf-status" class="field-select">
+            <option value="saved">Saved</option>
+            <option value="applied">Applied</option>
+            <option value="followed up">Followed Up</option>
+            <option value="interview">Interview</option>
+            <option value="rejected">Rejected</option>
+            <option value="offer">Offer</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Contact Person</label>
+          <input id="jf-contact" type="text" class="field-input" placeholder="Name / HR portal" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Notes</label>
+        <textarea id="jf-notes" class="field-textarea" style="min-height:60px" placeholder="Fit assessment, salary, key contact, anything relevant."></textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Next Action</label>
+        <input id="jf-next" type="text" class="field-input" placeholder="Follow up on [date] / Prepare for interview" />
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="saveJobForm()">Save</button>
+        <button class="btn btn-danger" onclick="deleteJob()">Delete</button>
+        <button class="btn btn-ghost" onclick="closeModal('job-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Learning Modal -->
+<div class="modal-overlay" id="learning-modal" onclick="if(event.target===this)closeModal('learning-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Learning Item</span>
+      <button class="btn btn-ghost btn-sm btn-icon" onclick="closeModal('learning-modal')">&#10005;</button>
+    </div>
+    <div id="learning-form">
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Topic</label>
+          <input id="lf-topic" type="text" class="field-input" placeholder="T-SQL for AML" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Current Level</label>
+          <input id="lf-level" type="text" class="field-input" placeholder="Beginner / Intermediate / Advanced" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Next Lesson / Action</label>
+        <input id="lf-next" type="text" class="field-input" placeholder="What is the very next thing to learn?" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Completion % (0–100)</label>
+        <input id="lf-pct" type="number" min="0" max="100" class="field-input" value="0" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Notes</label>
+        <textarea id="lf-notes" class="field-textarea" style="min-height:60px" placeholder="Resources, context, certification pathway."></textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="saveLearningForm()">Save</button>
+        <button class="btn btn-ghost" onclick="closeModal('learning-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
