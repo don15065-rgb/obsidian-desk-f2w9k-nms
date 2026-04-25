@@ -997,7 +997,7 @@ function escHtml(str) {
 function registerSW() {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js')
+      navigator.serviceWorker.register('/obsidian-desk-f2w9k-nms/service-worker.js')
         .catch(e => console.warn('SW registration failed', e));
     });
   }
